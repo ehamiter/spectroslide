@@ -25,6 +25,7 @@ struct ContentView: View {
     @State private var marker: Marker? = UserDefaults.standard.savedMarker() // Load saved marker
     @State private var showHalo = false // Track halo visibility
     @State private var currentMarkerPosition: CGPoint? = nil // Track the current marker position during the gesture
+    @State private var showTip: Bool = true // Default to show tip on first launch
     
     private var audioEngine = AVAudioEngine()
     private var noisePlayer = AVAudioPlayerNode()
@@ -37,15 +38,15 @@ struct ContentView: View {
                 .gesture(
                     LongPressGesture(minimumDuration: 1.0)
                         .onEnded { _ in
-                            if isPlaying {
-                                inSliderMode = true
-                                showHalo = true
-                                print("SLIDERMODE activated.")
-                            }
+                            inSliderMode = true
+                            showHalo = true
+                            showTip = false
+                            UserDefaults.standard.set(false, forKey: "showTip")
+                            print("SLIDERMODE activated.")
                         }
                         .simultaneously(with: DragGesture(minimumDistance: 0)
                             .onChanged { value in
-                                if isPlaying && inSliderMode {
+                                if inSliderMode {
                                     let newPosition = value.location
                                     moveMarker(to: newPosition)
                                     updateNoiseParameters(from: newPosition)
@@ -53,7 +54,7 @@ struct ContentView: View {
                                 }
                             }
                             .onEnded { _ in
-                                if isPlaying && inSliderMode {
+                                if inSliderMode {
                                     inSliderMode = false
                                     showHalo = false
                                     print("SLIDERMODE deactivated.")
@@ -65,9 +66,11 @@ struct ContentView: View {
                     Group {
                         if let marker = marker {
                             Circle()
-                                .stroke(showHalo ? Color.white.opacity(0.8) : Color.white.opacity(0.4), lineWidth: showHalo ? 4 : 2)
-                                .frame(width: 30, height: 30) // Made slightly larger
+                                .stroke(showHalo ? Color.white.opacity(0.8) : Color.white.opacity(0.4), lineWidth: showHalo ? 6 : 2)
+                                .frame(width: showHalo ? 40 : 30, height: showHalo ? 40 : 30) // Increased size when halo is active
+                                .scaleEffect(showHalo ? 1.2 : 1.0) // Slight scaling effect for attention
                                 .position(marker.position)
+                                .animation(showHalo ? .easeInOut(duration: 0.6).repeatForever(autoreverses: true) : .default, value: showHalo) // Pulsating animation only when showHalo is true
                         }
                     }
                 )
@@ -81,11 +84,37 @@ struct ContentView: View {
                     .foregroundColor(.white)
                     .shadow(radius: 10)
             }
+
+            // First-Time Tip
+            if showTip {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Text("Press the screen for one second, then slide!")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(10)
+                    }
+                    .padding(.bottom, 100)
+                    .onAppear {
+                        showHalo = false
+                    }
+                }
+            }
         }
         .onAppear {
             setupAudioChain()
             loadInitialState()
-            updateUIBasedOnMarker()
+            if UserDefaults.standard.bool(forKey: "hasLaunchedBefore") == false {
+                UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
+                setInitialMarker()
+            } else {
+                updateUIBasedOnMarker()
+                showTip = false
+            }
+            showHalo = false
         }
     }
     
@@ -148,6 +177,15 @@ struct ContentView: View {
         }
     }
     
+    // Set initial marker for first-time users
+    private func setInitialMarker() {
+        let initialPosition = CGPoint(x: UIScreen.main.bounds.width * 0.25, y: UIScreen.main.bounds.height * 0.5)
+        marker = Marker(position: initialPosition)
+        UserDefaults.standard.saveMarker(marker!)
+        updateNoiseParameters(from: initialPosition)
+        showHalo = false
+    }
+
     // Load initial state
     private func loadInitialState() {
         if let savedMarker = marker {
@@ -157,6 +195,7 @@ struct ContentView: View {
             frequency = 0.5 // Default to middle
             pitch = 0.5 // Default to middle
         }
+        showHalo = false
     }
 
     // Move marker to the specified position
