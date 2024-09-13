@@ -16,7 +16,7 @@
 /* Begin PBXFileReference section */
 		07B0B3402C90EA6900D40FAE /* Spectroslide.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spectroslide.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		07B0B3432C90EA6900D40FAE /* SpectroslideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectroslideApp.swift; sourceTree = "<group>"; };
-		07B0B3452C90EA6900D40FAE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		07B0B3452C90EA6900D40FAE /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		07B0B3472C90EA6B00D40FAE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		07B0B34A2C90EA6B00D40FAE /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 /* End PBXFileReference section */

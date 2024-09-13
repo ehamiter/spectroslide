@@ -1,27 +1,75 @@
 import SwiftUI
 import AVFoundation
 
+// Wrapper struct for CGPoint that conforms to Hashable
+struct Marker: Hashable {
+    let id = UUID()
+    var position: CGPoint
+
+    static func == (lhs: Marker, rhs: Marker) -> Bool {
+        return lhs.id == rhs.id && lhs.position == rhs.position
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(position.x)
+        hasher.combine(position.y)
+    }
+}
+
 struct ContentView: View {
     @State private var isPlaying = false
-    @State private var frequency: Float = 0.5 // Vertical control (deep to sharp noise)
-    @State private var pitch: Float = 0.5 // Horizontal control (low to high pitch)
+    @State private var inSliderMode = false // Track if SLIDERMODE is active
+    @State private var frequency: Float = 0.5 // Default to pink noise
+    @State private var pitch: Float = 0.5 // Default to middle pitch
+    @State private var marker: Marker? = UserDefaults.standard.savedMarker() // Load saved marker
+    @State private var showHalo = false // Track halo visibility
+    @State private var currentMarkerPosition: CGPoint? = nil // Track the current marker position during the gesture
     
     private var audioEngine = AVAudioEngine()
     private var noisePlayer = AVAudioPlayerNode()
-    private var eqNode = AVAudioUnitEQ(numberOfBands: 2)
-    
+
     var body: some View {
         ZStack {
             // Background Gradient that changes with frequency and pitch
             LinearGradient(gradient: Gradient(colors: backgroundColors()), startPoint: .topLeading, endPoint: .bottomTrailing)
                 .edgesIgnoringSafeArea(.all)
-                .hueRotation(Angle(degrees: Double(pitch) * 10)) // Subtle hue shift based on pitch
-                .opacity(0.7 + Double(pitch) * 0.3) // Adjust opacity with pitch
                 .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { value in
-                            updateNoiseParameters(from: value)
+                    LongPressGesture(minimumDuration: 1.0)
+                        .onEnded { _ in
+                            if isPlaying {
+                                inSliderMode = true
+                                showHalo = true
+                                print("SLIDERMODE activated.")
+                            }
                         }
+                        .simultaneously(with: DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                if isPlaying && inSliderMode {
+                                    let newPosition = value.location
+                                    moveMarker(to: newPosition)
+                                    updateNoiseParameters(from: newPosition)
+                                    currentMarkerPosition = newPosition
+                                }
+                            }
+                            .onEnded { _ in
+                                if isPlaying && inSliderMode {
+                                    inSliderMode = false
+                                    showHalo = false
+                                    print("SLIDERMODE deactivated.")
+                                }
+                            }
+                        )
+                )
+                .overlay(
+                    Group {
+                        if let marker = marker {
+                            Circle()
+                                .stroke(showHalo ? Color.white.opacity(0.8) : Color.white.opacity(0.4), lineWidth: showHalo ? 4 : 2)
+                                .frame(width: 30, height: 30) // Made slightly larger
+                                .position(marker.position)
+                        }
+                    }
                 )
             
             // Central Button
@@ -36,6 +84,8 @@ struct ContentView: View {
         }
         .onAppear {
             setupAudioChain()
+            loadInitialState()
+            updateUIBasedOnMarker()
         }
     }
     
@@ -49,7 +99,7 @@ struct ContentView: View {
         isPlaying.toggle()
     }
     
-    // Function to setup the audio chain with EQ effects
+    // Simplified audio setup
     private func setupAudioChain() {
         let output = audioEngine.outputNode
         let format = output.inputFormat(forBus: 0)
@@ -57,71 +107,64 @@ struct ContentView: View {
         let whiteNoise = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
             let ablPointer = UnsafeMutableAudioBufferListPointer(audioBufferList)
             for frame in 0..<Int(frameCount) {
-                let sampleVal = self.generateNoiseSample()
+                let sampleVal = Float.random(in: -1.0...1.0) * self.frequency
                 for buffer in ablPointer {
                     let buf: UnsafeMutableBufferPointer<Float> = UnsafeMutableBufferPointer(buffer)
-                    buf[frame] = sampleVal
+                    buf[frame] = sampleVal * pow(2.0, self.pitch - 0.5)
                 }
             }
             return noErr
         }
-        
-        // EQ Configuration
-        eqNode.globalGain = 1.0
-        
-        // Low-Pass Filter to enhance bass
-        let bassBand = eqNode.bands[0]
-        bassBand.filterType = .lowPass
-        bassBand.frequency = 150 // Lower frequency for deeper bass
-        bassBand.gain = 15.0 // High gain to emphasize bass
-        
-        // Band-Pass Filter to focus on lower mids
-        let midBand = eqNode.bands[1]
-        midBand.filterType = .bandPass
-        midBand.frequency = 500 // Mid-range frequency
-        midBand.bandwidth = 1.5 // Narrower band for sharper effect
-        midBand.gain = 5.0
-        
+
         audioEngine.attach(noisePlayer)
         audioEngine.attach(whiteNoise)
-        audioEngine.attach(eqNode)
-        
-        // Connect nodes
-        audioEngine.connect(whiteNoise, to: eqNode, format: format)
-        audioEngine.connect(eqNode, to: output, format: format)
+
+        audioEngine.connect(whiteNoise, to: output, format: format)
     }
-    
-    // Function to start noise with adjustable frequency and pitch
+
+    // Start noise playback
     private func startNoise() {
         try? audioEngine.start()
     }
-    
-    // Function to stop the noise
+
+    // Stop noise playback
     private func stopNoise() {
         audioEngine.pause()
     }
-    
-    // Generate a noise sample based on the current frequency and pitch
-    private func generateNoiseSample() -> Float {
-        let baseNoise = Float.random(in: -1.0...1.0)
-        let adjustedNoise = baseNoise * frequency * 0.5 // Adjusting for intensity
-        let pitchedNoise = adjustedNoise * pow(2.0, pitch - 0.5) // Pitch control
-        return pitchedNoise
-    }
-    
-    // Update frequency and pitch based on drag gesture position
-    private func updateNoiseParameters(from value: DragGesture.Value) {
-        let dragX = Float(value.location.x / UIScreen.main.bounds.width)
-        let dragY = Float(value.location.y / UIScreen.main.bounds.height)
+
+    // Update frequency and pitch based on position
+    private func updateNoiseParameters(from position: CGPoint) {
+        let dragX = Float(position.x / UIScreen.main.bounds.width)
+        let dragY = Float(position.y / UIScreen.main.bounds.height)
         
         pitch = max(0.2, min(dragX, 0.8)) // Horizontal drag controls pitch
         frequency = max(0.2, min(1.0 - dragY, 0.8)) // Vertical drag controls frequency
-        
-        // Dynamically adjust EQ parameters based on user input
-        eqNode.bands[0].gain = frequency * 24.0 - 12.0 // Adjust gain dynamically for bass
-        eqNode.bands[1].frequency = pitch * 1000.0 + 200.0 // Adjust frequency for mid-band
+    }
+
+    // Ensure the UI is correctly updated when the app loads
+    private func updateUIBasedOnMarker() {
+        if let marker = marker {
+            updateNoiseParameters(from: marker.position)
+        }
     }
     
+    // Load initial state
+    private func loadInitialState() {
+        if let savedMarker = marker {
+            frequency = Float(savedMarker.position.y / UIScreen.main.bounds.height)
+            pitch = Float(savedMarker.position.x / UIScreen.main.bounds.width)
+        } else {
+            frequency = 0.5 // Default to middle
+            pitch = 0.5 // Default to middle
+        }
+    }
+
+    // Move marker to the specified position
+    private func moveMarker(to position: CGPoint) {
+        marker = Marker(position: position)
+        UserDefaults.standard.saveMarker(marker!) // Save marker
+    }
+
     // Generate background colors based on the frequency range for different noise types
     private func backgroundColors() -> [Color] {
         if frequency < 0.4 {
@@ -146,7 +189,20 @@ struct ContentView: View {
     }
 }
 
+// UserDefaults extension to save and load the marker
+extension UserDefaults {
+    func saveMarker(_ marker: Marker) {
+        let data = ["x": marker.position.x, "y": marker.position.y]
+        set(data, forKey: "marker")
+    }
+    
+    func savedMarker() -> Marker? {
+        guard let data = dictionary(forKey: "marker") as? [String: CGFloat],
+              let x = data["x"], let y = data["y"] else { return nil }
+        return Marker(position: CGPoint(x: x, y: y))
+    }
+}
+
 #Preview {
     ContentView()
 }
-
