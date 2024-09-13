@@ -1,6 +1,6 @@
 //
-//  Color_NoiseApp.swift
-//  Color Noise
+//  SpectroslideApp.swift
+//  Spectroslide
 //
 //  Created by Eric on 9/10/24.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct Color_NoiseApp: App {
+struct SpectroslideApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

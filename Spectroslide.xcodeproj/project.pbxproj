@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		07B0B3442C90EA6900D40FAE /* Color_NoiseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B0B3432C90EA6900D40FAE /* Color_NoiseApp.swift */; };
+		07B0B3442C90EA6900D40FAE /* SpectroslideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B0B3432C90EA6900D40FAE /* SpectroslideApp.swift */; };
 		07B0B3462C90EA6900D40FAE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B0B3452C90EA6900D40FAE /* ContentView.swift */; };
 		07B0B3482C90EA6B00D40FAE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 07B0B3472C90EA6B00D40FAE /* Assets.xcassets */; };
 		07B0B34B2C90EA6B00D40FAE /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 07B0B34A2C90EA6B00D40FAE /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		07B0B3402C90EA6900D40FAE /* Color Noise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Color Noise.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		07B0B3432C90EA6900D40FAE /* Color_NoiseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color_NoiseApp.swift; sourceTree = "<group>"; };
+		07B0B3402C90EA6900D40FAE /* Spectroslide.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spectroslide.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		07B0B3432C90EA6900D40FAE /* SpectroslideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectroslideApp.swift; sourceTree = "<group>"; };
 		07B0B3452C90EA6900D40FAE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		07B0B3472C90EA6B00D40FAE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		07B0B34A2C90EA6B00D40FAE /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -35,7 +35,7 @@
 		07B0B3372C90EA6900D40FAE = {
 			isa = PBXGroup;
 			children = (
-				07B0B3422C90EA6900D40FAE /* Color Noise */,
+				07B0B3422C90EA6900D40FAE /* Spectroslide */,
 				07B0B3412C90EA6900D40FAE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,20 +43,20 @@
 		07B0B3412C90EA6900D40FAE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				07B0B3402C90EA6900D40FAE /* Color Noise.app */,
+				07B0B3402C90EA6900D40FAE /* Spectroslide.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		07B0B3422C90EA6900D40FAE /* Color Noise */ = {
+		07B0B3422C90EA6900D40FAE /* Spectroslide */ = {
 			isa = PBXGroup;
 			children = (
-				07B0B3432C90EA6900D40FAE /* Color_NoiseApp.swift */,
+				07B0B3432C90EA6900D40FAE /* SpectroslideApp.swift */,
 				07B0B3452C90EA6900D40FAE /* ContentView.swift */,
 				07B0B3472C90EA6B00D40FAE /* Assets.xcassets */,
 				07B0B3492C90EA6B00D40FAE /* Preview Content */,
 			);
-			path = "Color Noise";
+			path = Spectroslide;
 			sourceTree = "<group>";
 		};
 		07B0B3492C90EA6B00D40FAE /* Preview Content */ = {
@@ -70,9 +70,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		07B0B33F2C90EA6900D40FAE /* Color Noise */ = {
+		07B0B33F2C90EA6900D40FAE /* Spectroslide */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 07B0B34E2C90EA6B00D40FAE /* Build configuration list for PBXNativeTarget "Color Noise" */;
+			buildConfigurationList = 07B0B34E2C90EA6B00D40FAE /* Build configuration list for PBXNativeTarget "Spectroslide" */;
 			buildPhases = (
 				07B0B33C2C90EA6900D40FAE /* Sources */,
 				07B0B33D2C90EA6900D40FAE /* Frameworks */,
@@ -82,9 +82,9 @@
 			);
 			dependencies = (
 			);
-			name = "Color Noise";
+			name = Spectroslide;
 			productName = "Color Noise";
-			productReference = 07B0B3402C90EA6900D40FAE /* Color Noise.app */;
+			productReference = 07B0B3402C90EA6900D40FAE /* Spectroslide.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -102,7 +102,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 07B0B33B2C90EA6900D40FAE /* Build configuration list for PBXProject "Color Noise" */;
+			buildConfigurationList = 07B0B33B2C90EA6900D40FAE /* Build configuration list for PBXProject "Spectroslide" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -115,7 +115,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				07B0B33F2C90EA6900D40FAE /* Color Noise */,
+				07B0B33F2C90EA6900D40FAE /* Spectroslide */,
 			);
 		};
 /* End PBXProject section */
@@ -138,7 +138,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				07B0B3462C90EA6900D40FAE /* ContentView.swift in Sources */,
-				07B0B3442C90EA6900D40FAE /* Color_NoiseApp.swift in Sources */,
+				07B0B3442C90EA6900D40FAE /* SpectroslideApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -272,11 +272,11 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Color Noise/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "Spectroslide/Preview\\ Content";
 				DEVELOPMENT_TEAM = 24U6GLYEEQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Color Noise";
+				INFOPLIST_KEY_CFBundleDisplayName = Spectroslide;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -303,11 +303,11 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Color Noise/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "Spectroslide/Preview\\ Content";
 				DEVELOPMENT_TEAM = 24U6GLYEEQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Color Noise";
+				INFOPLIST_KEY_CFBundleDisplayName = Spectroslide;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -329,7 +329,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		07B0B33B2C90EA6900D40FAE /* Build configuration list for PBXProject "Color Noise" */ = {
+		07B0B33B2C90EA6900D40FAE /* Build configuration list for PBXProject "Spectroslide" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				07B0B34C2C90EA6B00D40FAE /* Debug */,
@@ -338,7 +338,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		07B0B34E2C90EA6B00D40FAE /* Build configuration list for PBXNativeTarget "Color Noise" */ = {
+		07B0B34E2C90EA6B00D40FAE /* Build configuration list for PBXNativeTarget "Spectroslide" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				07B0B34F2C90EA6B00D40FAE /* Debug */,
