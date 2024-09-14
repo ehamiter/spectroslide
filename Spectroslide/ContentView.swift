@@ -30,11 +30,47 @@ struct ContentView: View {
     private var audioEngine = AVAudioEngine()
     private var noisePlayer = AVAudioPlayerNode()
 
+    // Move marker to the specified position
+    private func moveMarker(to position: CGPoint) {
+        marker = Marker(position: position)
+        UserDefaults.standard.saveMarker(marker!) // Save marker
+    }
+
+    // Load initial state
+    private func loadInitialState() {
+        if let savedMarker = marker {
+            frequency = Float(savedMarker.position.y / UIScreen.main.bounds.height)
+            pitch = Float(savedMarker.position.x / UIScreen.main.bounds.width)
+        } else {
+            frequency = 0.5 // Default to middle
+            pitch = 0.5 // Default to middle
+        }
+        showHalo = false
+    }
+
+    // Set initial marker for first-time users
+    private func setInitialMarker() {
+        let initialPosition = CGPoint(x: UIScreen.main.bounds.width * 0.25, y: UIScreen.main.bounds.height * 0.5)
+        marker = Marker(position: initialPosition)
+        UserDefaults.standard.saveMarker(marker!)
+        updateNoiseParameters(from: initialPosition)
+        showHalo = false
+    }
+
+    // Ensure the UI is correctly updated when the app loads
+    private func updateUIBasedOnMarker() {
+        if let marker = marker {
+            updateNoiseParameters(from: marker.position)
+        }
+    }
+
+    
     var body: some View {
         ZStack {
             // Background Gradient that changes with frequency and pitch
             LinearGradient(gradient: Gradient(colors: backgroundColors()), startPoint: .topLeading, endPoint: .bottomTrailing)
                 .edgesIgnoringSafeArea(.all)
+                .brightness(Double(0.5 - pitch) * 0.3)
                 .gesture(
                     LongPressGesture(minimumDuration: 1.0)
                         .onEnded { _ in
@@ -168,40 +204,6 @@ struct ContentView: View {
         
         pitch = max(0.2, min(dragX, 0.8)) // Horizontal drag controls pitch
         frequency = max(0.2, min(1.0 - dragY, 0.8)) // Vertical drag controls frequency
-    }
-
-    // Ensure the UI is correctly updated when the app loads
-    private func updateUIBasedOnMarker() {
-        if let marker = marker {
-            updateNoiseParameters(from: marker.position)
-        }
-    }
-    
-    // Set initial marker for first-time users
-    private func setInitialMarker() {
-        let initialPosition = CGPoint(x: UIScreen.main.bounds.width * 0.25, y: UIScreen.main.bounds.height * 0.5)
-        marker = Marker(position: initialPosition)
-        UserDefaults.standard.saveMarker(marker!)
-        updateNoiseParameters(from: initialPosition)
-        showHalo = false
-    }
-
-    // Load initial state
-    private func loadInitialState() {
-        if let savedMarker = marker {
-            frequency = Float(savedMarker.position.y / UIScreen.main.bounds.height)
-            pitch = Float(savedMarker.position.x / UIScreen.main.bounds.width)
-        } else {
-            frequency = 0.5 // Default to middle
-            pitch = 0.5 // Default to middle
-        }
-        showHalo = false
-    }
-
-    // Move marker to the specified position
-    private func moveMarker(to position: CGPoint) {
-        marker = Marker(position: position)
-        UserDefaults.standard.saveMarker(marker!) // Save marker
     }
 
     // Generate background colors based on the frequency range for different noise types
