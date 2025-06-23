@@ -29,6 +29,10 @@ struct ContentView: View {
     
     private var audioEngine = AVAudioEngine()
     private var noisePlayer = AVAudioPlayerNode()
+    private var equalizer = AVAudioUnitEQ(numberOfBands: 3) // Simplified EQ
+    
+    // State for smoothing the noise
+    @State private var smoothingState: Float = 0.0
 
     // Move marker to the specified position
     private func moveMarker(to position: CGPoint) {
@@ -72,7 +76,7 @@ struct ContentView: View {
                 .edgesIgnoringSafeArea(.all)
                 .brightness(Double(0.5 - pitch) * 0.3)
                 .gesture(
-                    LongPressGesture(minimumDuration: 1.0)
+                    LongPressGesture(minimumDuration: 0.75)
                         .onEnded { _ in
                             inSliderMode = true
                             showHalo = true
@@ -164,28 +168,78 @@ struct ContentView: View {
         isPlaying.toggle()
     }
     
-    // Simplified audio setup
+    // Enhanced audio setup with proper colored noise generation
     private func setupAudioChain() {
+        // Configure audio session to play sound even when device is in silent mode
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.playback, mode: .default, options: [])
+            try audioSession.setActive(true)
+        } catch {
+            print("Failed to configure audio session: \(error)")
+        }
+        
         let output = audioEngine.outputNode
         let format = output.inputFormat(forBus: 0)
         
-        let whiteNoise = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
+        // Generate clean, simple noise
+        let cleanNoise = AVAudioSourceNode { _, _, frameCount, audioBufferList -> OSStatus in
             let ablPointer = UnsafeMutableAudioBufferListPointer(audioBufferList)
+            
             for frame in 0..<Int(frameCount) {
-                let sampleVal = Float.random(in: -1.0...1.0) * self.frequency
+                // Generate raw white noise
+                let rawNoise = Float.random(in: -1.0...1.0)
+                
+                // Apply smoothing filter to make it sound "slower" and more flowing
+                let smoothingAmount: Float = 0.999 // Very heavy smoothing for flowing sound
+                self.smoothingState = self.smoothingState * smoothingAmount + rawNoise * (1.0 - smoothingAmount)
+                
+                // Final sample with proper volume
+                let sample = self.smoothingState * 1.1 // Increased volume for better listening levels
+                
                 for buffer in ablPointer {
                     let buf: UnsafeMutableBufferPointer<Float> = UnsafeMutableBufferPointer(buffer)
-                    buf[frame] = sampleVal * pow(2.0, self.pitch - 0.5)
+                    buf[frame] = sample
                 }
             }
             return noErr
         }
 
-        audioEngine.attach(noisePlayer)
-        audioEngine.attach(whiteNoise)
-
-        audioEngine.connect(whiteNoise, to: output, format: format)
+        // Simple setup - just noise and basic EQ
+        audioEngine.attach(cleanNoise)
+        audioEngine.attach(equalizer)
+        
+        // Configure simple EQ
+        setupSimpleEQ()
+        
+        // Simple connection: noise -> EQ -> output
+        audioEngine.connect(cleanNoise, to: equalizer, format: format)
+        audioEngine.connect(equalizer, to: output, format: format)
     }
+    
+    // Configure simple, clean EQ with better bass
+    private func setupSimpleEQ() {
+        // Simple 3-band EQ: Low, Mid, High - optimized for bass
+        equalizer.bands[0].frequency = 60.0   // Lower frequency for real bass
+        equalizer.bands[0].gain = 0.0
+        equalizer.bands[0].bandwidth = 1.5
+        equalizer.bands[0].filterType = .lowShelf
+        equalizer.bands[0].bypass = false
+        
+        equalizer.bands[1].frequency = 800.0  // Mid frequencies  
+        equalizer.bands[1].gain = 0.0
+        equalizer.bands[1].bandwidth = 2.0
+        equalizer.bands[1].filterType = .parametric
+        equalizer.bands[1].bypass = false
+        
+        equalizer.bands[2].frequency = 6000.0 // High frequencies
+        equalizer.bands[2].gain = 0.0
+        equalizer.bands[2].bandwidth = 1.5
+        equalizer.bands[2].filterType = .highShelf
+        equalizer.bands[2].bypass = false
+    }
+    
+
 
     // Start noise playback
     private func startNoise() {
@@ -204,6 +258,31 @@ struct ContentView: View {
         
         pitch = max(0.2, min(dragX, 0.8)) // Horizontal drag controls pitch
         frequency = max(0.2, min(1.0 - dragY, 0.8)) // Vertical drag controls frequency
+        
+        // Update simple EQ settings based on position
+        updateSimpleEQ()
+    }
+    
+    // Adjust simple EQ settings based on slider position
+    private func updateSimpleEQ() {
+        // Frequency parameter controls the overall tone character
+        // Top to bottom: Red → Pink → Brown noise characteristics
+        if frequency < 0.33 {
+            // Brown noise (bottom): Deep, rumbling bass emphasis
+            equalizer.bands[0].gain = 15.0  // Strong bass boost for brown noise
+            equalizer.bands[1].gain = -2.0  // Slight mid cut
+            equalizer.bands[2].gain = -10.0 // Strong high cut
+        } else if frequency < 0.67 {
+            // Pink noise (middle): Balanced, natural sound
+            equalizer.bands[0].gain = 8.0   // Moderate bass boost for pink noise
+            equalizer.bands[1].gain = 0.0   // Keep mids neutral  
+            equalizer.bands[2].gain = -6.0  // Moderate high cut
+        } else {
+            // Red noise (top): Maximum low-frequency emphasis
+            equalizer.bands[0].gain = 20.0  // Maximum bass boost for red noise
+            equalizer.bands[1].gain = -3.0  // Cut mids more
+            equalizer.bands[2].gain = -15.0 // Maximum high cut
+        }
     }
 
     // Generate background colors based on the frequency range for different noise types
